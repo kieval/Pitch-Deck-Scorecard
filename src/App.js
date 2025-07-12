@@ -710,7 +710,7 @@ const PitchDeckScorecard = () => {
     const recommendations = getSlideRecommendations();
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
@@ -803,7 +803,7 @@ const PitchDeckScorecard = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-emerald-700 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -827,7 +827,7 @@ const PitchDeckScorecard = () => {
                         onClick={() => handleResponse(question.id, value)}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           responses[question.id] === value
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-emerald-700 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -858,7 +858,7 @@ const PitchDeckScorecard = () => {
             </button>
             <button
               onClick={nextSlide}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-800 transition-colors flex items-center space-x-2"
             >
               <span>{currentSlide === slides.length - 1 ? 'See Results' : 'Next'}</span>
               <ArrowRight className="w-5 h-5" />

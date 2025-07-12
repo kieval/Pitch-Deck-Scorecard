@@ -5,6 +5,8 @@ const PitchDeckScorecard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [responses, setResponses] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [emailData, setEmailData] = useState({ name: '', email: '', company: '' });
 
   const slides = [
     {
@@ -409,31 +411,112 @@ const PitchDeckScorecard = () => {
     return <XCircle className="w-6 h-6 text-red-600" />;
   };
 
-  const getRecommendations = (score) => {
-    if (score >= 80) {
-      return [
-        "Your pitch deck is strong! Focus on perfecting your delivery and timing.",
-        "Consider adding more compelling visuals to enhance emotional connection.",
-        "Practice handling tough investor questions with confidence.",
-        "Prepare detailed appendix slides for deep-dive discussions."
-      ];
-    } else if (score >= 60) {
-      return [
-        "Your pitch deck has good bones but needs strengthening in key areas.",
-        "Focus on making your value proposition more compelling and memorable.",
-        "Provide more concrete data to support your claims and projections.",
-        "Clarify your competitive advantage and market positioning.",
-        "Consider professional help to reach investment-ready standards."
-      ];
+  const calculateSlideScore = (slideIndex) => {
+    const slide = slides[slideIndex];
+    let slideScore = 0;
+    let maxSlideScore = 0;
+    
+    slide.questions.forEach(question => {
+      const response = responses[question.id];
+      if (response !== undefined) {
+        slideScore += response * question.weight;
+      }
+      maxSlideScore += 5 * question.weight;
+    });
+    
+    return maxSlideScore > 0 ? Math.round((slideScore / maxSlideScore) * 100) : 0;
+  };
+
+  const getSlideRecommendations = () => {
+    const slideScores = slides.map((_, index) => ({
+      slide: slides[index],
+      score: calculateSlideScore(index),
+      index: index
+    }));
+    
+    // Sort by lowest scores to identify weak areas
+    const weakSlides = slideScores.filter(s => s.score < 70).sort((a, b) => a.score - b.score);
+    
+    const recommendations = [];
+    
+    // General recommendations based on overall score
+    const overallScore = calculateScore();
+    if (overallScore >= 80) {
+      recommendations.push("Your pitch deck is strong! Focus on perfecting your delivery and timing.");
+    } else if (overallScore >= 60) {
+      recommendations.push("Your pitch deck has good bones but needs strengthening in key areas.");
     } else {
-      return [
-        "Your pitch deck needs significant improvement before investor meetings.",
-        "Start with clarifying your core value proposition and target market.",
-        "Develop realistic financial projections with clear supporting logic.",
-        "Gather more traction data and proof points for credibility.",
-        "Consider comprehensive pitch deck coaching to address fundamental gaps."
-      ];
+      recommendations.push("Your pitch deck needs significant improvement before investor meetings.");
     }
+    
+    // Specific recommendations for weak areas
+    if (weakSlides.length > 0) {
+      const weakestSlide = weakSlides[0];
+      
+      switch (weakestSlide.index) {
+        case 0: // Title/Cover
+          recommendations.push("Strengthen your cover slide with a clearer value proposition and professional visuals.");
+          break;
+        case 1: // Problem
+          recommendations.push("Make your problem statement more specific and urgent - clearly define who experiences this pain.");
+          break;
+        case 2: // Solution
+          recommendations.push("Better articulate what makes your solution unique and include compelling product visuals.");
+          break;
+        case 3: // Product/Operations
+          recommendations.push("Add more proof points like customer testimonials, awards, or operational achievements.");
+          break;
+        case 4: // Market Opportunity
+          recommendations.push("Develop a more realistic, bottom-up market analysis with clearly defined target segments.");
+          break;
+        case 5: // Business Model
+          recommendations.push("Provide more detailed unit economics and clearer explanation of how you make money.");
+          break;
+        case 6: // Traction
+          recommendations.push("Gather more concrete proof of demand - revenue data, customer numbers, or key partnerships.");
+          break;
+        case 7: // Go-to-Market
+          recommendations.push("Develop a more detailed go-to-market strategy with specific channels and timelines.");
+          break;
+        case 8: // Competitive Landscape
+          recommendations.push("Conduct deeper competitive analysis and more clearly articulate your unique advantages.");
+          break;
+        case 9: // Team
+          recommendations.push("Highlight more relevant experience or add strategic advisors to fill obvious skill gaps.");
+          break;
+        case 10: // Financials
+          recommendations.push("Create more realistic financial projections with clear logic and path to profitability.");
+          break;
+        case 11: // Ask & Use of Funds
+          recommendations.push("Provide more specific funding breakdown tied to clear milestones and outcomes.");
+          break;
+        case 12: // Impact
+          recommendations.push("Make your impact metrics more measurable and ensure they feel authentic.");
+          break;
+        case 13: // Close
+          recommendations.push("Create a stronger, more memorable close with clearer next steps for investors.");
+          break;
+      }
+    }
+    
+    // Add secondary weak area if exists
+    if (weakSlides.length > 1) {
+      const secondWeakest = weakSlides[1];
+      if (secondWeakest.index === 10) { // Financials
+        recommendations.push("Focus on developing realistic financial projections - this is critical for investor confidence.");
+      } else if (secondWeakest.index === 6) { // Traction
+        recommendations.push("Building more traction should be a priority before approaching investors.");
+      } else if (secondWeakest.index === 4) { // Market Opportunity
+        recommendations.push("Investors need to see a clear, large market opportunity - refine your market analysis.");
+      }
+    }
+    
+    // Always end with program CTA for scores under 85
+    if (overallScore < 85) {
+      recommendations.push("Consider professional pitch deck coaching to address these gaps systematically.");
+    }
+    
+    return recommendations;
   };
 
   const nextSlide = () => {
@@ -455,6 +538,90 @@ const PitchDeckScorecard = () => {
     setResponses({});
     setShowResults(false);
   };
+
+  if (showEmailCapture) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-800 mb-4">Get Your Detailed Results</h1>
+              <p className="text-gray-600 text-lg">
+                Enter your details below to receive your comprehensive pitch deck scorecard and personalized recommendations.
+              </p>
+            </div>
+
+            <form onSubmit={handleEmailSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={emailData.name}
+                  onChange={(e) => setEmailData({...emailData, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={emailData.email}
+                  onChange={(e) => setEmailData({...emailData, email: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={emailData.company}
+                  onChange={(e) => setEmailData({...emailData, company: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your company name (optional)"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>What you'll receive:</strong>
+                </p>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                  <li>• Your detailed pitch deck scorecard</li>
+                  <li>• Personalized improvement recommendations</li>
+                  <li>• Free pitch deck template</li>
+                  <li>• Weekly investment readiness tips</li>
+                </ul>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>Get My Results</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              We respect your privacy. Unsubscribe at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults) {
     const score = calculateScore();

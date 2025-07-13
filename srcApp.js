@@ -5,6 +5,8 @@ const PitchDeckScorecard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [responses, setResponses] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [emailData, setEmailData] = useState({ name: '', email: '', company: '' });
 
   const slides = [
     {
@@ -398,52 +400,248 @@ const PitchDeckScorecard = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-emerald-850';
+    if (score >= 60) return 'text-yellow-550';
+    return 'text-red-700';
   };
 
   const getScoreIcon = (score) => {
-    if (score >= 80) return <CheckCircle className="w-6 h-6 text-green-600" />;
-    if (score >= 60) return <AlertCircle className="w-6 h-6 text-yellow-600" />;
-    return <XCircle className="w-6 h-6 text-red-600" />;
+    if (score >= 80) return <CheckCircle className="w-6 h-6 text-emerald-850" />;
+    if (score >= 60) return <AlertCircle className="w-6 h-6 text-yellow-550" />;
+    return <XCircle className="w-6 h-6 text-red-700" />;
   };
 
-  const getRecommendations = (score) => {
-    if (score >= 80) {
-      return [
-        "Your pitch deck is strong! Focus on perfecting your delivery and timing.",
-        "Consider adding more compelling visuals to enhance emotional connection.",
-        "Practice handling tough investor questions with confidence.",
-        "Prepare detailed appendix slides for deep-dive discussions."
-      ];
-    } else if (score >= 60) {
-      return [
-        "Your pitch deck has good bones but needs strengthening in key areas.",
-        "Focus on making your value proposition more compelling and memorable.",
-        "Provide more concrete data to support your claims and projections.",
-        "Clarify your competitive advantage and market positioning.",
-        "Consider professional help to reach investment-ready standards."
-      ];
+  const calculateSlideScore = (slideIndex) => {
+    const slide = slides[slideIndex];
+    let slideScore = 0;
+    let maxSlideScore = 0;
+    
+    slide.questions.forEach(question => {
+      const response = responses[question.id];
+      if (response !== undefined) {
+        slideScore += response * question.weight;
+      }
+      maxSlideScore += 5 * question.weight;
+    });
+    
+    return maxSlideScore > 0 ? Math.round((slideScore / maxSlideScore) * 100) : 0;
+  };
+
+  const getSlideRecommendations = () => {
+    const slideScores = slides.map((_, index) => ({
+      slide: slides[index],
+      score: calculateSlideScore(index),
+      index: index
+    }));
+    
+    // Sort by lowest scores to identify weak areas
+    const weakSlides = slideScores.filter(s => s.score < 70).sort((a, b) => a.score - b.score);
+    
+    const recommendations = [];
+    
+    // General recommendations based on overall score
+    const overallScore = calculateScore();
+    if (overallScore >= 80) {
+      recommendations.push("Your pitch deck is strong! Focus on perfecting your delivery and timing.");
+    } else if (overallScore >= 60) {
+      recommendations.push("Your pitch deck has good bones but needs strengthening in key areas.");
     } else {
-      return [
-        "Your pitch deck needs significant improvement before investor meetings.",
-        "Start with clarifying your core value proposition and target market.",
-        "Develop realistic financial projections with clear supporting logic.",
-        "Gather more traction data and proof points for credibility.",
-        "Consider comprehensive pitch deck coaching to address fundamental gaps."
-      ];
+      recommendations.push("Your pitch deck needs significant improvement before investor meetings.");
     }
+    
+    // Specific recommendations for weak areas
+    if (weakSlides.length > 0) {
+      const weakestSlide = weakSlides[0];
+      
+      switch (weakestSlide.index) {
+        case 0: // Title/Cover
+          recommendations.push("Strengthen your cover slide with a clearer value proposition and professional visuals.");
+          break;
+        case 1: // Problem
+          recommendations.push("Make your problem statement more specific and urgent - clearly define who experiences this pain.");
+          break;
+        case 2: // Solution
+          recommendations.push("Better articulate what makes your solution unique and include compelling product visuals.");
+          break;
+        case 3: // Product/Operations
+          recommendations.push("Add more proof points like customer testimonials, awards, or operational achievements.");
+          break;
+        case 4: // Market Opportunity
+          recommendations.push("Develop a more realistic, bottom-up market analysis with clearly defined target segments.");
+          break;
+        case 5: // Business Model
+          recommendations.push("Provide more detailed unit economics and clearer explanation of how you make money.");
+          break;
+        case 6: // Traction
+          recommendations.push("Gather more concrete proof of demand - revenue data, customer numbers, or key partnerships.");
+          break;
+        case 7: // Go-to-Market
+          recommendations.push("Develop a more detailed go-to-market strategy with specific channels and timelines.");
+          break;
+        case 8: // Competitive Landscape
+          recommendations.push("Conduct deeper competitive analysis and more clearly articulate your unique advantages.");
+          break;
+        case 9: // Team
+          recommendations.push("Highlight more relevant experience or add strategic advisors to fill obvious skill gaps.");
+          break;
+        case 10: // Financials
+          recommendations.push("Create more realistic financial projections with clear logic and path to profitability.");
+          break;
+        case 11: // Ask & Use of Funds
+          recommendations.push("Provide more specific funding breakdown tied to clear milestones and outcomes.");
+          break;
+        case 12: // Impact
+          recommendations.push("Make your impact metrics more measurable and ensure they feel authentic.");
+          break;
+        case 13: // Close
+          recommendations.push("Create a stronger, more memorable close with clearer next steps for investors.");
+          break;
+      }
+    }
+    
+    // Add secondary weak area if exists
+    if (weakSlides.length > 1) {
+      const secondWeakest = weakSlides[1];
+      if (secondWeakest.index === 10) { // Financials
+        recommendations.push("Focus on developing realistic financial projections - this is critical for investor confidence.");
+      } else if (secondWeakest.index === 6) { // Traction
+        recommendations.push("Building more traction should be a priority before approaching investors.");
+      } else if (secondWeakest.index === 4) { // Market Opportunity
+        recommendations.push("Investors need to see a clear, large market opportunity - refine your market analysis.");
+      }
+    }
+    
+    // Always end with program CTA for scores under 85
+    if (overallScore < 85) {
+      recommendations.push("Consider enlisting professional support to address these gaps systematically.");
+    }
+    
+    return recommendations;
   };
 
-  const nextSlide = () => {
-    if (currentSlide < slides.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      setShowResults(true);
-    }
+  // Generate PDF report
+  const generatePDFReport = () => {
+    const score = calculateScore();
+    const recommendations = getSlideRecommendations();
+    
+    // Create HTML content for the report
+    const reportContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Pitch Deck Scorecard Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3B82F6; padding-bottom: 20px; }
+          .score { font-size: 48px; font-weight: bold; color: ${score >= 80 ? '#0d542b' : score >= 60 ? '#D97706' : '#C00000'}; }
+          .section { margin: 30px 0; }
+          .slide-score { margin: 10px 0; padding: 10px; background: #F3F4F6; border-radius: 5px; }
+          .recommendation { margin: 10px 0; padding: 10px; background: #EFF6FF; border-left: 4px solid #3B82F6; }
+          .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #656; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Pitch Deck Scorecard Report</h1>
+          <div class="score">${score}%</div>
+          <p>Generated on ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="section">
+          <h2>Overall Assessment</h2>
+          <p>${score >= 80 ? 'Excellent! Your pitch deck is investment-ready.' :
+               score >= 60 ? 'Good progress! Some areas need attention.' :
+               'Needs work. Significant improvements required.'}</p>
+        </div>
+        
+        <div class="section">
+          <h2>Slide-by-Slide Scores</h2>
+          ${slides.map((slide, index) => `
+            <div class="slide-score">
+              <strong>${slide.title}:</strong> ${calculateSlideScore(index)}%
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="section">
+          <h2>Key Recommendations</h2>
+          ${recommendations.map(rec => `
+            <div class="recommendation">
+              ${rec}
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="footer">
+          <p>Pitch Deck Scorecard Tool by www.hikieran.com</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Create and download the HTML file (since we can't generate actual PDFs in this environment)
+    const blob = new Blob([reportContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pitch-deck-scorecard-report-${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
+  // Handle email form submission
+// Complete handleEmailSubmit function - replace your existing one with this:
+
+const handleEmailSubmit = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Send email data to your Vercel serverless function
+    const response = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: emailData.name,
+        email: emailData.email,
+        company: emailData.company,
+        score: calculateScore(),
+        recommendations: getSlideRecommendations()
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to subscribe');
+    }
+
+    const result = await response.json();
+    
+    // Generate the PDF report for download
+    generatePDFReport();
+    
+    // Show success message
+    alert('Thank you! Your detailed results have been sent to your email.');
+    
+    // After successful email submission, show results instead of hiding email capture
+    setShowEmailCapture(false);
+    setShowResults(true);
+    
+  } catch (error) {
+    console.error('Error submitting email:', error);
+    alert('There was an error processing your request. Please try again.');
+  }
+};
+const nextSlide = () => {
+  if (currentSlide < slides.length - 1) {
+    setCurrentSlide(currentSlide + 1);
+  } else {
+    // Go directly to email capture instead of results
+    setShowEmailCapture(true);
+  }
+};
   const prevSlide = () => {
     if (currentSlide > 0) {
       setCurrentSlide(currentSlide - 1);
@@ -454,14 +652,98 @@ const PitchDeckScorecard = () => {
     setCurrentSlide(0);
     setResponses({});
     setShowResults(false);
+    setShowEmailCapture(false);
   };
+
+  if (showEmailCapture) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-800 mb-4">Get Your Detailed Results</h1>
+              <p className="text-gray-600 text-lg">
+                Enter your details below to receive your comprehensive pitch deck scorecard and personalized recommendations.
+              </p>
+            </div>
+
+            <form onSubmit={handleEmailSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={emailData.name}
+                  onChange={(e) => setEmailData({...emailData, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={emailData.email}
+                  onChange={(e) => setEmailData({...emailData, email: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={emailData.company}
+                  onChange={(e) => setEmailData({...emailData, company: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
+                  placeholder="Enter your company name (optional)"
+                />
+              </div>
+
+              <div className="bg-slate-50 border border-slate-800 rounded-lg p-4">
+                <p className="text-sm text-emerald-800">
+                  <strong>What you'll receive:</strong>
+                </p>
+                <ul className="text-sm text-emerald-800 mt-2 space-y-1">
+                  <li>• Your detailed pitch deck scorecard</li>
+                  <li>• Personalized improvement recommendations</li>
+                  <li>• Free pitch deck template</li>
+                </ul>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-slate-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>Get My Results</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              We respect your privacy. Unsubscribe at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults) {
     const score = calculateScore();
-    const recommendations = getRecommendations(score);
+    const recommendations = getSlideRecommendations();
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
@@ -491,18 +773,28 @@ const PitchDeckScorecard = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white mb-6">
+            <div className="bg-gradient-to-r from-slate-600 to-slate-900 rounded-xl p-6 text-white mb-6">
               <h3 className="text-xl font-semibold mb-2">Ready to Take Your Pitch to the Next Level?</h3>
               <p className="mb-4">
                 Join our comprehensive 3-month Investment Readiness Program and transform your pitch deck into a powerful funding tool.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <a 
+                  href="https://hikieran.com/work_with_me" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white text-slate-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center"
+                >
                   Learn More About Our Program
-                </button>
-                <button className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                </a>
+                <a 
+                  href="https://hikieran.com/contact" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-slate-600 transition-colors text-center"
+                >
                   Schedule a Consultation
-                </button>
+                </a>
               </div>
             </div>
 
@@ -513,7 +805,10 @@ const PitchDeckScorecard = () => {
               >
                 Retake Assessment
               </button>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2">
+              <button 
+                onClick={generatePDFReport}
+                className="bg-slate-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-700 transition-colors flex items-center space-x-2"
+              >
                 <Download className="w-5 h-5" />
                 <span>Download Report</span>
               </button>
@@ -528,7 +823,7 @@ const PitchDeckScorecard = () => {
   const progress = ((currentSlide + 1) / slides.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
@@ -541,7 +836,7 @@ const PitchDeckScorecard = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-emerald-700 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -565,7 +860,7 @@ const PitchDeckScorecard = () => {
                         onClick={() => handleResponse(question.id, value)}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           responses[question.id] === value
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-emerald-700 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -596,7 +891,7 @@ const PitchDeckScorecard = () => {
             </button>
             <button
               onClick={nextSlide}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-800 transition-colors flex items-center space-x-2"
             >
               <span>{currentSlide === slides.length - 1 ? 'See Results' : 'Next'}</span>
               <ArrowRight className="w-5 h-5" />

@@ -6,7 +6,7 @@ const PitchDeckScorecard = () => {
   const [responses, setResponses] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
-  const [emailData, setEmailData] = useState({ name: '', email: '', company: '' });
+  const [emailData, setEmailData] = useState({ firstName: '', lastName: '', email: '', company: '' });
 
   const slides = [
     {
@@ -596,16 +596,15 @@ const PitchDeckScorecard = () => {
 
 const handleEmailSubmit = async (e) => {
   e.preventDefault();
-  
   try {
-    // Send email data to your Vercel serverless function
     const response = await fetch('/api/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: emailData.name,
+        firstName: emailData.firstName,
+        lastName: emailData.lastName,
         email: emailData.email,
         company: emailData.company,
         score: calculateScore(),
@@ -618,17 +617,10 @@ const handleEmailSubmit = async (e) => {
     }
 
     const result = await response.json();
-    
-    // Generate the PDF report for download
     generatePDFReport();
-    
-    // Show success message
     alert('Thank you! Your detailed results have been sent to your email.');
-    
-    // After successful email submission, show results instead of hiding email capture
     setShowEmailCapture(false);
     setShowResults(true);
-    
   } catch (error) {
     console.error('Error submitting email:', error);
     alert('There was an error processing your request. Please try again.');
@@ -668,18 +660,33 @@ const nextSlide = () => {
             </div>
 
             <form onSubmit={handleEmailSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={emailData.name}
-                  onChange={(e) => setEmailData({...emailData, name: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={emailData.firstName}
+                    onChange={(e) => setEmailData({...emailData, firstName: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={emailData.lastName}
+                    onChange={(e) => setEmailData({...emailData, lastName: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
+                    placeholder="Enter your last name"
+                  />
+                </div>
               </div>
 
               <div>
@@ -691,7 +698,7 @@ const nextSlide = () => {
                   required
                   value={emailData.email}
                   onChange={(e) => setEmailData({...emailData, email: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
                   placeholder="Enter your email address"
                 />
               </div>
@@ -704,26 +711,25 @@ const nextSlide = () => {
                   type="text"
                   value={emailData.company}
                   onChange={(e) => setEmailData({...emailData, company: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:border-transparent"
                   placeholder="Enter your company name (optional)"
                 />
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
+              <div className="bg-slate-50 border border-slate-800 rounded-lg p-4">
+                <p className="text-sm text-emerald-800">
                   <strong>What you'll receive:</strong>
                 </p>
-                <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                <ul className="text-sm text-emerald-800 mt-2 space-y-1">
                   <li>• Your detailed pitch deck scorecard</li>
                   <li>• Personalized improvement recommendations</li>
                   <li>• Free pitch deck template</li>
-                  <li>• Weekly investment readiness tips</li>
                 </ul>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                className="w-full bg-slate-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center space-x-2"
               >
                 <span>Get My Results</span>
                 <ArrowRight className="w-5 h-5" />
@@ -777,7 +783,7 @@ const nextSlide = () => {
             <div className="bg-gradient-to-r from-slate-600 to-slate-900 rounded-xl p-6 text-white mb-6">
               <h3 className="text-xl font-semibold mb-2">Ready to Take Your Pitch to the Next Level?</h3>
               <p className="mb-4">
-                Join our comprehensive 3-month Investment Readiness Program and transform your pitch deck into a powerful funding tool.
+                The one-on-one Investment Readiness Engagement: 3 Months to Clear Numbers, A Strong Story and Confident Investor Conversations.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a 
@@ -786,7 +792,7 @@ const nextSlide = () => {
                   rel="noopener noreferrer"
                   className="bg-white text-slate-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center"
                 >
-                  Learn More About Our Program
+                  Learn More
                 </a>
                 <a 
                   href="https://hikieran.com/contact" 

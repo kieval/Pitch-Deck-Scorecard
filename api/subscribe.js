@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   try {
     // Add subscriber to Sender.net
-    const senderResponse = await fetch('https://api.sender.net/v2/subscribers', {
+    const senderResponse = await fetch('https://api.sender.net/eXplXl', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.SENDER_API_TOKEN}`,

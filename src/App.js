@@ -1,4 +1,4 @@
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle, AlertCircle, XCircle, Download, ArrowRight, Star } from 'lucide-react';
 
 const PitchDeckScorecard = () => {
@@ -592,67 +592,22 @@ const PitchDeckScorecard = () => {
   };
 
   // Handle email form submission
-// Replace the existing handleEmailSubmit function with this updated version
+// Complete handleEmailSubmit function - replace your existing one with this:
 
 const handleEmailSubmit = async (e) => {
   e.preventDefault();
   
   try {
-    // Step 1: Send email to Sender.net
-    const senderResponse = await fetch('https://api.sender.net/v2/subscribers', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer YOUR_SENDER_API_TOKEN', // Replace with your actual token
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        email: emailData.email,
-        firstname: emailData.name,
-        lastname: '', // You can split the name if needed
-        groups: ['pitch-deck-scorecard'], // Create this group in Sender
-        fields: {
-          company: emailData.company,
-          score: calculateScore(),
-          assessment_date: new Date().toISOString(),
-          recommendations: getSlideRecommendations().join('; ')
-        }
-      })
-    });
-
-    if (!senderResponse.ok) {
-      throw new Error('Failed to add subscriber to Sender');
-    }
-
-    // Step 2: Send welcome email via Sender automation
-    // This will be triggered automatically by Sender's automation rules
-    
-    // Step 3: Generate and potentially email the PDF report
-    generatePDFReport();
-    
-    alert('Thank you! Your detailed results have been sent to your email.');
-    setShowEmailCapture(false);
-    
-  } catch (error) {
-    console.error('Error submitting email:', error);
-    alert('There was an error processing your request. Please try again.');
-  }
-};
-
-// Alternative: If you prefer to use a serverless function for security
-// Create this as /api/subscribe.js in your Vercel project
-
-const handleEmailSubmitServerless = async (e) => {
-  e.preventDefault();
-  
-  try {
+    // Send email data to your Vercel serverless function
     const response = await fetch('/api/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        ...emailData,
+        name: emailData.name,
+        email: emailData.email,
+        company: emailData.company,
         score: calculateScore(),
         recommendations: getSlideRecommendations()
       })
@@ -664,15 +619,124 @@ const handleEmailSubmitServerless = async (e) => {
 
     const result = await response.json();
     
+    // Generate the PDF report for download
     generatePDFReport();
+    
+    // Show success message
     alert('Thank you! Your detailed results have been sent to your email.');
+    
+    // After successful email submission, show results instead of hiding email capture
     setShowEmailCapture(false);
+    setShowResults(true);
     
   } catch (error) {
     console.error('Error submitting email:', error);
     alert('There was an error processing your request. Please try again.');
   }
 };
+const nextSlide = () => {
+  if (currentSlide < slides.length - 1) {
+    setCurrentSlide(currentSlide + 1);
+  } else {
+    // Go directly to email capture instead of results
+    setShowEmailCapture(true);
+  }
+};
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide(currentSlide - 1);
+    }
+  };
+
+  const resetAssessment = () => {
+    setCurrentSlide(0);
+    setResponses({});
+    setShowResults(false);
+    setShowEmailCapture(false);
+  };
+
+  if (showEmailCapture) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-800 mb-4">Get Your Detailed Results</h1>
+              <p className="text-gray-600 text-lg">
+                Enter your details below to receive your comprehensive pitch deck scorecard and personalized recommendations.
+              </p>
+            </div>
+
+            <form onSubmit={handleEmailSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={emailData.name}
+                  onChange={(e) => setEmailData({...emailData, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={emailData.email}
+                  onChange={(e) => setEmailData({...emailData, email: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={emailData.company}
+                  onChange={(e) => setEmailData({...emailData, company: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your company name (optional)"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>What you'll receive:</strong>
+                </p>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                  <li>• Your detailed pitch deck scorecard</li>
+                  <li>• Personalized improvement recommendations</li>
+                  <li>• Free pitch deck template</li>
+                  <li>• Weekly investment readiness tips</li>
+                </ul>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>Get My Results</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              We respect your privacy. Unsubscribe at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (showResults) {

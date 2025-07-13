@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, company, score, recommendations } = req.body;
+  const { firstName, lastName, email, company, score, recommendations } = req.body;
 
   try {
     // Add subscriber to Sender.net
@@ -17,13 +17,13 @@ export default async function handler(req, res) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        email: email,
-        firstname: name,
-        lastname: '',
-        groups: ['eXplXl'],
+        email,
+        firstname: firstName,
+        lastname: lastName,
+        groups: ['eXplXl'], // your Sender group ID
         fields: {
           company: company || '',
-          score: score,
+          score,
           assessment_date: new Date().toISOString(),
           recommendations: recommendations.join('; ')
         }
@@ -36,9 +36,6 @@ export default async function handler(req, res) {
     }
 
     const senderData = await senderResponse.json();
-
-    // Trigger welcome email automation in Sender
-    // This happens automatically through Sender's automation rules
 
     return res.status(200).json({ 
       success: true, 
@@ -54,5 +51,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
-// Don't forget to add SENDER_API_TOKEN to your Vercel environment variables

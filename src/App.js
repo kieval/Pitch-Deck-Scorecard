@@ -426,7 +426,11 @@ const PitchDeckScorecard = () => {
     
     return maxSlideScore > 0 ? Math.round((slideScore / maxSlideScore) * 100) : 0;
   };
-
+const getSlideScoresAsString = () => {
+  return slides.map((slide, index) => {
+    return `${slide.title}: ${calculateSlideScore(index)}%`;
+  }).join(', ');
+};
   const getSlideRecommendations = () => {
     const slideScores = slides.map((_, index) => ({
       slide: slides[index],
@@ -608,7 +612,8 @@ const handleEmailSubmit = async (e) => {
         email: emailData.email,
         company: emailData.company,
         score: calculateScore(),
-        recommendations: getSlideRecommendations()
+        recommendations: getSlideRecommendations(),
+slideScores: getSlideScoresAsString()
       })
     });
 

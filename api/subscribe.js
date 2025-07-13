@@ -1,14 +1,21 @@
-// /api/subscribe.js - Vercel serverless function
+// ✅ FILE: /api/subscribe.js - Vercel serverless function
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { firstName, lastName, email, company, score, recommendations } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    company,
+    score,
+    recommendations,
+    slideScores // ✅ New field
+  } = req.body;
 
   try {
-    // Add subscriber to Sender.net
     const senderResponse = await fetch('https://api.sender.net/v2/subscribers', {
       method: 'POST',
       headers: {
@@ -20,12 +27,13 @@ export default async function handler(req, res) {
         email,
         firstname: firstName,
         lastname: lastName,
-        groups: ['eXplXl'], // your Sender group ID
+        groups: ['eXplXl'],
         fields: {
           company: company || '',
           score,
           assessment_date: new Date().toISOString(),
-          recommendations: recommendations.join('; ')
+          recommendations: recommendations.join('; '),
+          slide_scores: slideScores // ✅ New custom field for slide-by-slide breakdown
         }
       })
     });
@@ -37,17 +45,17 @@ export default async function handler(req, res) {
 
     const senderData = await senderResponse.json();
 
-    return res.status(200).json({ 
-      success: true, 
+    return res.status(200).json({
+      success: true,
       message: 'Successfully subscribed',
-      subscriber_id: senderData.id 
+      subscriber_id: senderData.id
     });
 
   } catch (error) {
     console.error('Subscription error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    return res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 }

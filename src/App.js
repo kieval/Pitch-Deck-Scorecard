@@ -622,7 +622,6 @@ slideScores: getSlideScoresAsString()
     }
 
     const result = await response.json();
-    generatePDFReport();
     alert('Thank you! Your detailed results have been sent to your email.');
     setShowEmailCapture(false);
     setShowResults(true);
@@ -660,7 +659,7 @@ const nextSlide = () => {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-4">Get Your Detailed Results</h1>
               <p className="text-gray-600 text-lg">
-                Enter your details below to receive your comprehensive pitch deck scorecard and personalized recommendations.
+                Enter your details below and we'll email you your comprehensive pitch deck scorecard with personalized recommendations within minutes.
               </p>
             </div>
 
@@ -726,9 +725,10 @@ const nextSlide = () => {
                   <strong>What you'll receive:</strong>
                 </p>
                 <ul className="text-sm text-emerald-800 mt-2 space-y-1">
-                  <li>• Your detailed pitch deck scorecard</li>
-                  <li>• Personalized improvement recommendations</li>
-                  <li>• Free pitch deck template</li>
+                  <li>• Your detailed pitch deck scorecard with individual slide scores< /li>
+                  <li>• Personalized improvement recommendations based on your responses</li>
+                  <li>• Bonus: Free pitch deck template</li>
+<li>• Bonus: Tips for investor-ready presentations</li>
                 </ul>
               </div>
 

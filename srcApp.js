@@ -776,7 +776,7 @@ const nextSlide = () => {
             <div className="bg-gradient-to-r from-slate-600 to-slate-900 rounded-xl p-6 text-white mb-6">
               <h3 className="text-xl font-semibold mb-2">Ready to Take Your Pitch to the Next Level?</h3>
               <p className="mb-4">
-                Join our comprehensive 3-month Investment Readiness Program and transform your pitch deck into a powerful funding tool.
+                The one-on-one Investment Readiness Engagement: 3 Months to Clear Numbers, A Strong Story and Confident Investor Conversations.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a 
@@ -785,7 +785,7 @@ const nextSlide = () => {
                   rel="noopener noreferrer"
                   className="bg-white text-slate-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center"
                 >
-                  Learn More About Our Program
+                  Learn More
                 </a>
                 <a 
                   href="https://hikieran.com/contact" 

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   try {
     // Add subscriber to Sender.net
-    const senderResponse = await fetch('https://api.sender.net/eXplXl', {
+    const senderResponse = await fetch('https://api.sender.net/v2/subscribers', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.SENDER_API_TOKEN}`,
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         email: email,
         firstname: name,
         lastname: '',
-        groups: ['pitch-deck-scorecard'], // Make sure this matches your group name exactly
+        groups: ['eXplXl'],
         fields: {
           company: company || '',
           score: score,

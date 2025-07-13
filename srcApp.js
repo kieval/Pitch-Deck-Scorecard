@@ -6,7 +6,7 @@ const PitchDeckScorecard = () => {
   const [responses, setResponses] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
-  const [emailData, setEmailData] = useState({ name: '', email: '', company: '' });
+  const [emailData, setEmailData] = useState({ firstName: '', lastName: '', email: '', company: '' });
 
   const slides = [
     {
@@ -596,16 +596,15 @@ const PitchDeckScorecard = () => {
 
 const handleEmailSubmit = async (e) => {
   e.preventDefault();
-  
   try {
-    // Send email data to your Vercel serverless function
     const response = await fetch('/api/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: emailData.name,
+        firstName: emailData.firstName,
+        lastName: emailData.lastName,
         email: emailData.email,
         company: emailData.company,
         score: calculateScore(),
@@ -618,17 +617,10 @@ const handleEmailSubmit = async (e) => {
     }
 
     const result = await response.json();
-    
-    // Generate the PDF report for download
     generatePDFReport();
-    
-    // Show success message
     alert('Thank you! Your detailed results have been sent to your email.');
-    
-    // After successful email submission, show results instead of hiding email capture
     setShowEmailCapture(false);
     setShowResults(true);
-    
   } catch (error) {
     console.error('Error submitting email:', error);
     alert('There was an error processing your request. Please try again.');

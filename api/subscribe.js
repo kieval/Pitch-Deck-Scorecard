@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         email: email,
         firstname: name,
         lastname: '',
-        groups: ['pitch-deck-scorecard'],
+        groups: ['pitch-deck-scorecard'], // Make sure this matches your group name exactly
         fields: {
           company: company || '',
           score: score,

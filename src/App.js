@@ -595,8 +595,6 @@ const getSlideScoresAsString = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Handle email form submission
-// Complete handleEmailSubmit function - replace your existing one with this:
 
 const handleEmailSubmit = async (e) => {
   e.preventDefault();
@@ -614,6 +612,7 @@ const handleEmailSubmit = async (e) => {
         score: calculateScore(),
         recommendations: getSlideRecommendations(),
 slideScores: getSlideScoresAsString()
+individualSlideScores: slides.map((slide, index) => ({ slideTitle: slide.title, score: calculateSlideScore(index), slideIndex: index })), detailedResponses: responses })
       })
     });
 

@@ -426,11 +426,6 @@ const PitchDeckScorecard = () => {
     
     return maxSlideScore > 0 ? Math.round((slideScore / maxSlideScore) * 100) : 0;
   };
-const getSlideScoresAsObject = () => 
-{ return slides.reduce((acc, slide, index) => { const slideKey = slide.title.toLowerCase().
-replace(/[^a-z0-9]/g, '_'); acc[slideKey] = calculateSlideScore(index); 
-return acc; }, {}); };
-
 const getSlideScoresAsString = () => {
   return slides.map((slide, index) => {
     return `${slide.title}: ${calculateSlideScore(index)}%`;
@@ -611,7 +606,16 @@ const handleEmailSubmit = async (e) => {
       headers: {
         'Content-Type': 'application/json',
       },
-body: JSON.stringify({ firstName: emailData.firstName, lastName: emailData.lastName, email: emailData.email, company: emailData.company, score: calculateScore(), recommendations: getSlideRecommendations(), slideScores: getSlideScoresAsString(), // Keep for backward compatibility individualSlideScores: getSlideScoresAsObject() // New structured data })    });
+      body: JSON.stringify({
+        firstName: emailData.firstName,
+        lastName: emailData.lastName,
+        email: emailData.email,
+        company: emailData.company,
+        score: calculateScore(),
+        recommendations: getSlideRecommendations(),
+slideScores: getSlideScoresAsString()
+      })
+    });
 
     if (!response.ok) {
       throw new Error('Failed to subscribe');

@@ -611,7 +611,7 @@ const handleEmailSubmit = async (e) => {
         company: emailData.company,
         score: calculateScore(),
         recommendations: getSlideRecommendations(),
-slideScores: getSlideScoresAsString()
+slideScores: getSlideScoresAsString(),
 individualSlideScores: slides.map((slide, index) => ({ slideTitle: slide.title, score: calculateSlideScore(index), slideIndex: index })), detailedResponses: responses })
       })
     });

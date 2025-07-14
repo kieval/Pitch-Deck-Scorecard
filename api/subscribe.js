@@ -12,7 +12,8 @@ export default async function handler(req, res) {
     company,
     score,
     recommendations,
-    slideScores // 
+    slideScores,
+    individualSlideScores
   } = req.body;
 
   try {
@@ -33,7 +34,22 @@ export default async function handler(req, res) {
           score,
           assessment_date: new Date().toISOString(),
           recommendations: recommendations.join('; '),
-          slide_scores: slideScores // 
+          slide_scores: slideScores,
+          // Individual slide scores for personalized emails
+          title_score: individualSlideScores?.title_cover_slide || 0,
+          problem_score: individualSlideScores?.problem || 0,
+          solution_score: individualSlideScores?.solution || 0,
+          product_score: individualSlideScores?.product_operations || 0,
+          market_score: individualSlideScores?.market_opportunity || 0,
+          business_model_score: individualSlideScores?.business_model || 0,
+          traction_score: individualSlideScores?.traction || 0,
+          gtm_score: individualSlideScores?.go_to_market_strategy || 0,
+          competition_score: individualSlideScores?.competitive_landscape || 0,
+          team_score: individualSlideScores?.team || 0,
+          financials_score: individualSlideScores?.financials || 0,
+          ask_score: individualSlideScores?.ask_use_of_funds || 0,
+          impact_score: individualSlideScores?.impact || 0,
+          close_score: individualSlideScores?.close_next_steps || 0
         }
       })
     });

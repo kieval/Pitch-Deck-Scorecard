@@ -1,4 +1,4 @@
-// ✅ FILE: /api/subscribe.js - Vercel serverless function
+// FILE: /api/subscribe.js - Vercel serverless function
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,8 +11,23 @@ export default async function handler(req, res) {
     email,
     company,
     score,
+assessment_date,
+title_score,
+problem_score,
+solution_score,
+product_score,
+market_score,
+business_model_score,
+traction_score,
+gtm_score,
+competition_score,
+team_score,
+financials_score,
+ask_score,
+impact_score,
+close_score,
     recommendations,
-    slideScores // ✅ New field
+    slideScores // 
   } = req.body;
 
   try {
@@ -33,7 +48,20 @@ export default async function handler(req, res) {
           score,
           assessment_date: new Date().toISOString(),
           recommendations: recommendations.join('; '),
-          slide_scores: slideScores // ✅ New custom field for slide-by-slide breakdown
+problem_score: slideScores[1], 
+solution_score: slideScores[2], 
+product_score: slideScores[3], 
+market_score: slideScores[4], 
+business_model_score: slideScores[5], 
+traction_score: slideScores[6], 
+gtm_score: slideScores[7], 
+competition_score: slideScores[8], 
+team_score: slideScores[9], 
+financials_score: slideScores[10], 
+ask_score: slideScores[11],
+ impact_score: slideScores[12], 
+close_score: slideScores[13]
+          slide_scores: slideScores // 
         }
       })
     });

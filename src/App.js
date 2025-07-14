@@ -606,16 +606,31 @@ const handleEmailSubmit = async (e) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        firstName: emailData.firstName,
-        lastName: emailData.lastName,
-        email: emailData.email,
-        company: emailData.company,
-        score: calculateScore(),
-        recommendations: getSlideRecommendations(),
-slideScores: getSlideScoresAsString()
-      })
-    });
+     body: JSON.stringify({
+  firstName: emailData.firstName,
+  lastName: emailData.lastName,
+  email: emailData.email,
+  company: emailData.company,
+  score: calculateScore(),
+  recommendations: getSlideRecommendations(),
+  slideScores: getSlideScoresAsString(),
+  individualSlideScores: {
+    title_cover_slide: calculateSlideScore(0),
+    problem: calculateSlideScore(1),
+    solution: calculateSlideScore(2),
+    product_operations: calculateSlideScore(3),
+    market_opportunity: calculateSlideScore(4),
+    business_model: calculateSlideScore(5),
+    traction: calculateSlideScore(6),
+    go_to_market_strategy: calculateSlideScore(7),
+    competitive_landscape: calculateSlideScore(8),
+    team: calculateSlideScore(9),
+    financials: calculateSlideScore(10),
+    ask_use_of_funds: calculateSlideScore(11),
+    impact: calculateSlideScore(12),
+    close_next_steps: calculateSlideScore(13)
+  }
+});
 
     if (!response.ok) {
       throw new Error('Failed to subscribe');

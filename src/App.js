@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import { CheckCircle, AlertCircle, XCircle, Download, ArrowRight, Star } from 'lucide-react';
 
 const PitchDeckScorecard = () => {
+  const [showWelcome, setShowWelcome] = useState(true); // ADD THIS LINE
   const [currentSlide, setCurrentSlide] = useState(0);
   const [responses, setResponses] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [emailData, setEmailData] = useState({ firstName: '', lastName: '', email: '', company: '' });
+
+  // ADD THIS FUNCTION - Insert this entire function after the useState declarations
+  const startScorecard = () => {
+    setShowWelcome(false);
+  };
 
   const slides = [
     {
@@ -385,7 +391,6 @@ const PitchDeckScorecard = () => {
   const calculateScore = () => {
     let totalScore = 0;
     let maxScore = 0;
-    
     slides.forEach(slide => {
       slide.questions.forEach(question => {
         const response = responses[question.id];
@@ -395,7 +400,6 @@ const PitchDeckScorecard = () => {
         maxScore += 5 * question.weight;
       });
     });
-    
     return Math.round((totalScore / maxScore) * 100);
   };
 
@@ -415,7 +419,6 @@ const PitchDeckScorecard = () => {
     const slide = slides[slideIndex];
     let slideScore = 0;
     let maxSlideScore = 0;
-    
     slide.questions.forEach(question => {
       const response = responses[question.id];
       if (response !== undefined) {
@@ -423,26 +426,26 @@ const PitchDeckScorecard = () => {
       }
       maxSlideScore += 5 * question.weight;
     });
-    
     return maxSlideScore > 0 ? Math.round((slideScore / maxSlideScore) * 100) : 0;
   };
-const getSlideScoresAsString = () => {
-  return slides.map((slide, index) => {
-    return `${slide.title}: ${calculateSlideScore(index)}%`;
-  }).join(', ');
-};
+
+  const getSlideScoresAsString = () => {
+    return slides.map((slide, index) => {
+      return `${slide.title}: ${calculateSlideScore(index)}%`;
+    }).join(', ');
+  };
+
   const getSlideRecommendations = () => {
     const slideScores = slides.map((_, index) => ({
       slide: slides[index],
       score: calculateSlideScore(index),
       index: index
     }));
-    
+
     // Sort by lowest scores to identify weak areas
     const weakSlides = slideScores.filter(s => s.score < 70).sort((a, b) => a.score - b.score);
-    
     const recommendations = [];
-    
+
     // General recommendations based on overall score
     const overallScore = calculateScore();
     if (overallScore >= 80) {
@@ -452,11 +455,10 @@ const getSlideScoresAsString = () => {
     } else {
       recommendations.push("Your pitch deck needs significant improvement before investor meetings.");
     }
-    
+
     // Specific recommendations for weak areas
     if (weakSlides.length > 0) {
       const weakestSlide = weakSlides[0];
-      
       switch (weakestSlide.index) {
         case 0: // Title/Cover
           recommendations.push("Strengthen your cover slide with a clearer value proposition and professional visuals.");
@@ -502,7 +504,7 @@ const getSlideScoresAsString = () => {
           break;
       }
     }
-    
+
     // Add secondary weak area if exists
     if (weakSlides.length > 1) {
       const secondWeakest = weakSlides[1];
@@ -514,12 +516,12 @@ const getSlideScoresAsString = () => {
         recommendations.push("Investors need to see a clear, large market opportunity - refine your market analysis.");
       }
     }
-    
+
     // Always end with program CTA for scores under 85
     if (overallScore < 85) {
       recommendations.push("Consider enlisting professional support to address these gaps systematically.");
     }
-    
+
     return recommendations;
   };
 
@@ -527,62 +529,62 @@ const getSlideScoresAsString = () => {
   const generatePDFReport = () => {
     const score = calculateScore();
     const recommendations = getSlideRecommendations();
-    
+
     // Create HTML content for the report
     const reportContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Pitch Deck Scorecard Report</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3B82F6; padding-bottom: 20px; }
-          .score { font-size: 48px; font-weight: bold; color: ${score >= 80 ? '#0d542b' : score >= 60 ? '#D97706' : '#C00000'}; }
-          .section { margin: 30px 0; }
-          .slide-score { margin: 10px 0; padding: 10px; background: #F3F4F6; border-radius: 5px; }
-          .recommendation { margin: 10px 0; padding: 10px; background: #EFF6FF; border-left: 4px solid #3B82F6; }
-          .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #656; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>Pitch Deck Scorecard Report</h1>
-          <div class="score">${score}%</div>
-          <p>Generated on ${new Date().toLocaleDateString()}</p>
-        </div>
-        
-        <div class="section">
-          <h2>Overall Assessment</h2>
-          <p>${score >= 80 ? 'Excellent! Your pitch deck is investment-ready.' :
-               score >= 60 ? 'Good progress! Some areas need attention.' :
-               'Needs work. Significant improvements required.'}</p>
-        </div>
-        
-        <div class="section">
-          <h2>Slide-by-Slide Scores</h2>
-          ${slides.map((slide, index) => `
-            <div class="slide-score">
-              <strong>${slide.title}:</strong> ${calculateSlideScore(index)}%
-            </div>
-          `).join('')}
-        </div>
-        
-        <div class="section">
-          <h2>Key Recommendations</h2>
-          ${recommendations.map(rec => `
-            <div class="recommendation">
-              ${rec}
-            </div>
-          `).join('')}
-        </div>
-        
-        <div class="footer">
-          <p>Pitch Deck Scorecard Tool by www.hikieran.com</p>
-        </div>
-      </body>
-      </html>
-    `;
-    
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pitch Deck Scorecard Report</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+.header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3B82F6; padding-bottom: 20px; }
+.score { font-size: 48px; font-weight: bold; color: ${score >= 80 ? '#0d542b' : score >= 60 ? '#D97706' : '#C00000'}; }
+.section { margin: 30px 0; }
+.slide-score { margin: 10px 0; padding: 10px; background: #F3F4F6; border-radius: 5px; }
+.recommendation { margin: 10px 0; padding: 10px; background: #EFF6FF; border-left: 4px solid #3B82F6; }
+.footer { margin-top: 50px; text-align: center; font-size: 12px; color: #656; }
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Pitch Deck Scorecard Report</h1>
+<div class="score">${score}%</div>
+<p>Generated on ${new Date().toLocaleDateString()}</p>
+</div>
+
+<div class="section">
+<h2>Overall Assessment</h2>
+<p>${score >= 80 ? 'Excellent! Your pitch deck is investment-ready.' :
+        score >= 60 ? 'Good progress! Some areas need attention.' :
+        'Needs work. Significant improvements required.'}</p>
+</div>
+
+<div class="section">
+<h2>Slide-by-Slide Scores</h2>
+${slides.map((slide, index) => `
+<div class="slide-score">
+<strong>${slide.title}:</strong> ${calculateSlideScore(index)}%
+</div>
+`).join('')}
+</div>
+
+<div class="section">
+<h2>Key Recommendations</h2>
+${recommendations.map(rec => `
+<div class="recommendation">
+${rec}
+</div>
+`).join('')}
+</div>
+
+<div class="footer">
+<p>Pitch Deck Scorecard Tool by www.hikieran.com</p>
+</div>
+</body>
+</html>
+`;
+
     // Create and download the HTML file (since we can't generate actual PDFs in this environment)
     const blob = new Blob([reportContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
@@ -596,64 +598,64 @@ const getSlideScoresAsString = () => {
   };
 
   // Handle email form submission
-// Complete handleEmailSubmit function - replace your existing one with this:
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: emailData.firstName,
+          lastName: emailData.lastName,
+          email: emailData.email,
+          company: emailData.company,
+          score: calculateScore(),
+          recommendations: getSlideRecommendations(),
+          slideScores: getSlideScoresAsString(),
+          individualSlideScores: {
+            title_cover_slide: calculateSlideScore(0),
+            problem: calculateSlideScore(1),
+            solution: calculateSlideScore(2),
+            product_operations: calculateSlideScore(3),
+            market_opportunity: calculateSlideScore(4),
+            business_model: calculateSlideScore(5),
+            traction: calculateSlideScore(6),
+            go_to_market_strategy: calculateSlideScore(7),
+            competitive_landscape: calculateSlideScore(8),
+            team: calculateSlideScore(9),
+            financials: calculateSlideScore(10),
+            ask_use_of_funds: calculateSlideScore(11),
+            impact: calculateSlideScore(12),
+            close_next_steps: calculateSlideScore(13)
+          }
+        })
+      });
 
-const handleEmailSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await fetch('/api/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-         body: JSON.stringify({
-        firstName: emailData.firstName,
-        lastName: emailData.lastName,
-        email: emailData.email,
-        company: emailData.company,
-        score: calculateScore(),
-        recommendations: getSlideRecommendations(),
-        slideScores: getSlideScoresAsString(),
-        individualSlideScores: {
-          title_cover_slide: calculateSlideScore(0),
-          problem: calculateSlideScore(1),
-          solution: calculateSlideScore(2),
-          product_operations: calculateSlideScore(3),
-          market_opportunity: calculateSlideScore(4),
-          business_model: calculateSlideScore(5),
-          traction: calculateSlideScore(6),
-          go_to_market_strategy: calculateSlideScore(7),
-          competitive_landscape: calculateSlideScore(8),
-          team: calculateSlideScore(9),
-          financials: calculateSlideScore(10),
-          ask_use_of_funds: calculateSlideScore(11),
-          impact: calculateSlideScore(12),
-          close_next_steps: calculateSlideScore(13)
-        }
-      })
-    });
+      if (!response.ok) {
+        throw new Error('Failed to subscribe');
+      }
 
-    if (!response.ok) {
-      throw new Error('Failed to subscribe');
+      const result = await response.json();
+      alert('Thank you! Your detailed results have been sent to your email.');
+      setShowEmailCapture(false);
+      setShowResults(true);
+    } catch (error) {
+      console.error('Error submitting email:', error);
+      alert('There was an error processing your request. Please try again.');
     }
+  };
 
-    const result = await response.json();
-    alert('Thank you! Your detailed results have been sent to your email.');
-    setShowEmailCapture(false);
-    setShowResults(true);
-  } catch (error) {
-    console.error('Error submitting email:', error);
-    alert('There was an error processing your request. Please try again.');
-  }
-};
-const nextSlide = () => {
-  if (currentSlide < slides.length - 1) {
-    setCurrentSlide(currentSlide + 1);
-  } else {
-    // Go directly to email capture instead of results
-    setShowEmailCapture(true);
-  }
-};
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      setCurrentSlide(currentSlide + 1);
+    } else {
+      // Go directly to email capture instead of results
+      setShowEmailCapture(true);
+    }
+  };
+
   const prevSlide = () => {
     if (currentSlide > 0) {
       setCurrentSlide(currentSlide - 1);
@@ -665,7 +667,57 @@ const nextSlide = () => {
     setResponses({});
     setShowResults(false);
     setShowEmailCapture(false);
+    setShowWelcome(true); // ADD THIS LINE
   };
+
+  // ADD THIS ENTIRE SECTION - Insert after resetAssessment function and before existing if statements
+  if (showWelcome) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-gray-800 mb-4">Pitch Deck Scorecard</h1>
+              <p className="text-xl text-gray-600">For Caribbean Business Owners Preparing to Raise Capital</p>
+            </div>
+            
+            <div className="prose prose-lg max-w-none text-gray-700 mb-8">
+              <p className="text-lg leading-relaxed mb-6">
+                If you're a Caribbean business owner preparing to raise capital, whether from a bank, investor, or strategic partner, your pitch deck (or investment overview if you prefer that language) needs to tell a clear, logical story.
+              </p>
+              
+              <p className="text-lg leading-relaxed mb-4">It needs to take us through:</p>
+              
+              <ol className="text-lg space-y-2 mb-6">
+                <li>The problem you solve</li>
+                <li>Your solution, and how it's different</li>
+                <li>Your customer and the market opportunity</li>
+                <li>What you've built so far (operations + traction)</li>
+                <li>How you make money</li>
+                <li>Your team and their ability to execute as the business scales</li>
+                <li>Your numbers (including unit economics) and how funding helps you grow</li>
+                <li>Your ask and what milestones the funding will get the business to</li>
+              </ol>
+              
+              <p className="text-lg leading-relaxed mb-6">
+                Pitch Decks are not just for high-tech businesses seeking venture capital. This structure forces clarity whether you're raising funds or just trying to make more strategic decisions inside your business. See how your Pitch Deck investment story stacks up with this Pitch Deck Scorecard.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={startScorecard}
+                className="bg-slate-700 text-white px-8 py-4 rounded-lg text-xl font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center space-x-3 mx-auto"
+              >
+                <span>Start Your Scorecard</span>
+                <ArrowRight className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showEmailCapture) {
     return (
@@ -678,7 +730,7 @@ const nextSlide = () => {
                 Enter your details below and we'll email you your comprehensive pitch deck scorecard with personalized recommendations within minutes.
               </p>
             </div>
-
+            
             <form onSubmit={handleEmailSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -708,7 +760,7 @@ const nextSlide = () => {
                   />
                 </div>
               </div>
-
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address *
@@ -722,7 +774,7 @@ const nextSlide = () => {
                   placeholder="Enter your email address"
                 />
               </div>
-
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Company Name
@@ -735,19 +787,19 @@ const nextSlide = () => {
                   placeholder="Enter your company name (optional)"
                 />
               </div>
-
+              
               <div className="bg-slate-50 border border-slate-800 rounded-lg p-4">
                 <p className="text-sm text-emerald-800">
                   <strong>What you'll receive:</strong>
                 </p>
                 <ul className="text-sm text-emerald-800 mt-2 space-y-1">
-                  <li>• Your detailed pitch deck scorecard with individual slide scores< /li>
+                  <li>• Your detailed pitch deck scorecard with individual slide scores</li>
                   <li>• Personalized improvement recommendations based on your responses</li>
                   <li>• Bonus: Free pitch deck template</li>
-<li>• Bonus: Tips for investor-ready presentations</li>
+                  <li>• Bonus: Tips for investor-ready presentations</li>
                 </ul>
               </div>
-
+              
               <button
                 type="submit"
                 className="w-full bg-slate-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center space-x-2"
@@ -756,7 +808,7 @@ const nextSlide = () => {
                 <ArrowRight className="w-5 h-5" />
               </button>
             </form>
-
+            
             <p className="text-xs text-gray-500 text-center mt-4">
               We respect your privacy. Unsubscribe at any time.
             </p>
@@ -769,7 +821,7 @@ const nextSlide = () => {
   if (showResults) {
     const score = calculateScore();
     const recommendations = getSlideRecommendations();
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-800 to-gray-800 p-4">
         <div className="max-w-4xl mx-auto">
@@ -807,16 +859,16 @@ const nextSlide = () => {
                 The one-on-one Investment Readiness Engagement: 3 Months to Clear Numbers, A Strong Story and Confident Investor Conversations.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a 
-                  href="https://hikieran.com/work_with_me" 
+                <a
+                  href="https://hikieran.com/work_with_me"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white text-slate-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center"
                 >
                   Learn More
                 </a>
-                <a 
-                  href="https://hikieran.com/contact" 
+                <a
+                  href="https://hikieran.com/contact"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-slate-600 transition-colors text-center"
@@ -833,7 +885,7 @@ const nextSlide = () => {
               >
                 Retake Assessment
               </button>
-              <button 
+              <button
                 onClick={generatePDFReport}
                 className="bg-slate-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-700 transition-colors flex items-center space-x-2"
               >
@@ -863,7 +915,7 @@ const nextSlide = () => {
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-emerald-700 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               ></div>
